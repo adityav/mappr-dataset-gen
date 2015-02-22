@@ -125,9 +125,9 @@ DepDatasetBuilder.prototype.buildDataset = function(depsToProcess) {
 			}
 			newdepsToProcess = newdepsToProcess.concat(depsToFetch);
 		});
-		console.log("Found" + newdepsToProcess.length + "Deps to process.");
+		console.log("Found " + newdepsToProcess.length + " Deps to process.");
 		newdepsToProcess = _.reject(_.uniq(newdepsToProcess), function(dep) { return !!self.dataset[dep]; });
-		console.log("Processing:" + newdepsToProcess.length +  " dependencies. Rest have been prev fetched....");
+		console.log("Processing " + newdepsToProcess.length +  " dependencies. Rest have been previously fetched....");
 		return self.buildDataset(newdepsToProcess);
 	});
 };
@@ -199,7 +199,7 @@ function genXLSXFromDataset (DepDataset) {
 
 	console.log("Number of rows:" + data.length);
 
-	var ws_name = "SheetJS";
+	var ws_name = "nodes";
 
 	var wb = new Workbook(), ws = sheet_from_array_of_arrays(data);
 	 
@@ -208,7 +208,8 @@ function genXLSXFromDataset (DepDataset) {
 	wb.Sheets[ws_name] = ws;
 	 
 	/* write file */
-	XLSX.writeFile(wb, DepDataset.name + 'xlsx');
+	XLSX.writeFile(wb, DepDataset.name + '.xlsx');
+	console.log("Written file:" + DepDataset.name + '.xlsx')
 }
 
 function sheet_from_array_of_arrays(data, opts) {
