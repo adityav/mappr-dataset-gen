@@ -4,12 +4,26 @@ var _       = require("lodash"),
 	assert  = require("assert"),
 	fs      = require("fs"),
 	XLSX    = require("XLSX"),
-	colors  = require('colors');
+	colors  = require('colors'),
 	Promise = require("bluebird"),
 	npm     = require("npm");
 
 Promise.longStackTraces();
 var onLoad = Promise.promisify(npm.load)({});
+
+colors.setTheme({
+  silly: 'rainbow',
+  input: 'grey',
+  verbose: 'cyan',
+  prompt: 'grey',
+  info: 'green',
+  data: 'grey',
+  help: 'cyan',
+  warn: 'yellow',
+  debug: 'blue',
+  error: 'red'
+});
+
 
 module.exports = {
 	fetchFiles : function(deps, flags) {
