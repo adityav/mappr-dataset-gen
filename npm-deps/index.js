@@ -1,13 +1,14 @@
 'use strict';
 
-var _ = require("lodash"),
-	assert = require("assert"),
-	fs = require("fs"),
-	XLSX = require("XLSX"),
-	Promise = require("bluebird");
+var _       = require("lodash"),
+	assert  = require("assert"),
+	fs      = require("fs"),
+	XLSX    = require("XLSX"),
+	colors  = require('colors');
+	Promise = require("bluebird"),
+	npm     = require("npm");
 
 Promise.longStackTraces();
-var npm = require("npm");
 var onLoad = Promise.promisify(npm.load)({});
 
 module.exports = {
@@ -16,7 +17,7 @@ module.exports = {
 		onLoad.then(function(crap) {
 			var ddb = new DepDatasetBuilder(deps, flags);
 			ddb.buildDS().then(function(blah) {
-				console.log(ddb.dataset);
+				console.log("Fetched " + _.size(ddb.dataset) + " dependencies");
 
 				fs.writeFile(ddb.name + '.json', JSON.stringify(ddb), function(err, res) {
 					if(err) console.error("Error occured in saving file", err);
@@ -41,15 +42,21 @@ function DepDatasetBuilder (baseDeps, opts) {
 	"repoUrl", "main", "homepage", "maintainers", "keywords",
 	"contributors", "dependencies", "devDependencies", "createdAt", "modifiedAt"];
 	this.fetchDevDeps = !!opts.fetchDevDeps;
+	if(this.fetchDevDeps) {
+		this.name = this.name + "_dev";
+	}
+
+	this._fetchCache = {};
 }
 
 DepDatasetBuilder.prototype.buildDS = function() {
 	return this.buildDataset(this.depsToProcess);
 };
 
-DepDatasetBuilder.prototype.fetchDepInfo = function(depName) {
-	return onLoad.then(function fetchInfo () {
+DepDatasetBuilder.prototype.fetchDepInfo = function(dep) {
+	function fetchInfo (depName) {
 		return new Promise(function (resolve, reject) {
+			console.log("Fetching dep for " + depName + " ....");
 			npm.commands.view([depName], true, function(err, res) {
 				if(err) {
 					console.warn("Error in fetching information for dep " + depName + ". Error :", err);
@@ -57,11 +64,22 @@ DepDatasetBuilder.prototype.fetchDepInfo = function(depName) {
 						name : depName
 					});
 				} else {
+					console.log("fetched info for " + depName);
 					resolve(_.values(res)[0]);
 				}
 			});
 		});
-	});
+	}
+
+	var fetchP = this._fetchCache[dep];
+
+	if(!fetchP) {
+		fetchP = fetchInfo(dep);
+		this._fetchCache[dep] = fetchP;
+	} else {
+		console.log("Serving from Cache:" + dep);
+	}
+	return fetchP;
 };
 
 DepDatasetBuilder.prototype.buildDataset = function(depsToProcess) {
@@ -72,9 +90,7 @@ DepDatasetBuilder.prototype.buildDataset = function(depsToProcess) {
 		return Promise.resolve(self);
 	}
 	var fetchP = _.map(depsToProcess, function (dep) {
-		console.log("Fetching dep for " + dep + " ....");
-		return self.fetchDepInfo(dep)
-			.tap(function() { console.log("fetched info for " + dep); });
+		return self.fetchDepInfo(dep);
 	}, {concurrency: 15});
 
 	return Promise.all(fetchP).then(function (gotInfos) {
@@ -89,18 +105,15 @@ DepDatasetBuilder.prototype.buildDataset = function(depsToProcess) {
 		// process sub deps
 		var newdepsToProcess = [];
 		_.each(nodes, function (node) {
-
-			var depsToFetch = node.dependencies;
-			if(self.fetchDevDeps)
-				depsToFetch.concat(node.devDependencies);
-			var subDeps = _.filter(depsToFetch, function (subdep) {
-				return newdepsToProcess.indexOf(subdep) === -1 && !self.dataset[subdep];
-			});
-			_.each(subDeps, function processDeps (dep) {
-				newdepsToProcess.push(dep);
-			}, self);
+			var depsToFetch = node.dependencies.slice(0);
+			if(self.fetchDevDeps) {
+				depsToFetch = depsToFetch.concat(node.devDependencies);
+			}
+			newdepsToProcess = newdepsToProcess.concat(depsToFetch);
 		});
-
+		console.log("Found" + newdepsToProcess.length + "Deps to process.");
+		newdepsToProcess = _.reject(_.uniq(newdepsToProcess), function(dep) { return !!self.dataset[dep]; });
+		console.log("Processing:" + newdepsToProcess.length +  " dependencies. Rest have been prev fetched....");
 		return self.buildDataset(newdepsToProcess);
 	});
 };
@@ -150,7 +163,7 @@ function genXLSXFromDataset (DepDataset) {
 	// attrs
 	data.push(dataPoints);
 
-	_.each(dataset, function(datum, datumName) {
+	_.each(dataset, function(datum) {
 		var row = [];
 
 		_.each(dataPoints, function (dp) {
