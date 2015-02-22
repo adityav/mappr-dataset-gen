@@ -1,0 +1,43 @@
+{
+  "name": "deps-parser",
+  "version": "0.0.1",
+  "description": "Parser module dependencies to generate mappr.io dataset",
+  "homepage": "http://mappr.io",
+  "author": {
+    "name": "Aditya",
+    "email": "blackleopard92@gmail.com"
+  },
+  "repository": "adityav/deps-parser",
+  "license": "MIT",
+  "files": [
+    "index.js",
+    "cli.js"
+  ],
+  "keywords": [
+    "deps-parser",
+    "parser",
+    "mappr"
+  ],
+  "dependencies": {
+    "bluebird": "^2.9.12",
+    "lodash": "3.x.x",
+    "meow": "2.x.x",
+    "xlsx": "^0.7.12"
+  },
+  "devDependencies": {
+    "grunt-cli": "^0.1.13",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-nodeunit": "^0.4.1",
+    "grunt-contrib-watch": "^0.6.1",
+    "load-grunt-tasks": "^1.0.0",
+    "time-grunt": "^1.0.0",
+    "grunt-mocha-cli": "^1.11.0",
+    "jshint-stylish": "^1.0.0"
+  },
+  "scripts": {
+    "test": "grunt"
+  },
+  "bin": {
+    "deps-parser": "cli.js"
+  }
+}
