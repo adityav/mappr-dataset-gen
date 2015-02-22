@@ -18,15 +18,17 @@ $ npm install --save deps-parser
 clone the directory and install the dependencies using npm.
 
 To generate dep Dataset for `express`. we can do
-```./cli.js --fetch express
 
-```./cli.js --gen express.json
-
+```
+./cli.js --fetch express
+./cli.js --gen express.json
+```
 a express.xlsx file should be created in the current directory
 
 ### Flags
 `--fetchDevDeps` - fetches dev dependencies in addition to regular dependencies. We careful. Express project has 36 dependencies, while dev dependencies are 2873!
 
+### Dev
 ```js
 var deps-parser = require('deps-parser');
 ```
