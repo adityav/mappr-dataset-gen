@@ -3,6 +3,7 @@
 > Parser module dependencies to generate mappr.io dataset
 
 There are 2 modes. --fetch and --gen.
+
 `--fetch` fetches dataset for given dependencies and generate a json file.
 
 `--gen` generates an xlsx file for the given json dump.
@@ -15,7 +16,7 @@ $ npm install --save deps-parser
 
 
 ## Usage
-clone the directory and install the dependencies using npm.
+clone the repository and install the dependencies using `npm install`.
 
 To generate dep Dataset for `express`. we can do
 
