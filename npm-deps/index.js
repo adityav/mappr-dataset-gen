@@ -208,7 +208,7 @@ function genXLSXFromDataset (DepDataset) {
 	wb.Sheets[ws_name] = ws;
 	 
 	/* write file */
-	XLSX.writeFile(wb, 'test.xlsx');
+	XLSX.writeFile(wb, DepDataset.name + 'xlsx');
 }
 
 function sheet_from_array_of_arrays(data, opts) {
